@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/joho/godotenv"
 
 	"github.com/ASR11104/the-mallu-hangman/internal/config"
 	"github.com/ASR11104/the-mallu-hangman/internal/handlers"
+	"github.com/ASR11104/the-mallu-hangman/internal/session"
 )
 
 func main() {
@@ -19,9 +21,12 @@ func main() {
 		panic(err)
 	}
 
+	// Initialize session manager with 30-minute timeout
+	sessionManager := session.NewManager(30 * time.Minute)
+
 	mux.HandleFunc("/health", handlers.Health)
 	mux.Handle("/movie", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handlers.Movies(w, r, cfg)
+		handlers.Movies(w, r, cfg, sessionManager)
 	}))
 	server := &http.Server{
 		Addr:    ":8080",
